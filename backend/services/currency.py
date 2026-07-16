@@ -17,9 +17,10 @@ def _fetch_eur_rate(currency: str) -> float:
     hard-fails just because the FX lookup is unreachable."""
     try:
         resp = httpx.get(
-            "https://api.frankfurter.app/latest",
+            "https://api.frankfurter.dev/v1/latest",
             params={"from": currency, "to": "EUR"},
             timeout=5.0,
+            follow_redirects=True,
         )
         resp.raise_for_status()
         return float(resp.json()["rates"]["EUR"])
