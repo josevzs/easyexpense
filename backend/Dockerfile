@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r backend/requirements.txt \
     && pip install --no-cache-dir gunicorn
 
 COPY backend/ backend/
+COPY tricount_extractor/ tricount_extractor/
 
 EXPOSE 8000
 
