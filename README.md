@@ -40,6 +40,16 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
+### Docker (alternative)
+
+Run backend + frontend together with Docker Compose — no local Python/Node setup needed:
+
+```bash
+docker compose up -d --build
+```
+
+Open [http://localhost:8080](http://localhost:8080). API keys can be set by copying `.env.example` to `.env` before starting; sessions persist across restarts in a named volume.
+
 ## Configuration
 
 Click the **⚙ Settings** button to configure your AI provider:

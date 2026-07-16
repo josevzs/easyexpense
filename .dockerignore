@@ -1,0 +1,14 @@
+.git
+.claude
+.sessions
+frontend/node_modules
+frontend/dist
+frontend/.vite
+**/__pycache__
+**/*.pyc
+settings.json
+.env
+data.xlsx
+HOW_TO.md
+HOW_TO_FOR_CLAUDE.md
+PRODUCT.md
