@@ -19,7 +19,7 @@ _CATEGORY_DESCRIPTIONS = {
     "Farmacia": "pharmacy, medicine, health products",
     "Parking": "parking lots, parking meters, car parks",
     "Taxis": "taxis, ride-hailing (Uber, Cabify, Bolt), cab services, transfers",
-    "Tricount Close": "final settlement transactions, reimbursements, balance closing transfers between participants",
+    "Transfer": "final settlement transactions, reimbursements, balance closing transfers between participants",
     "Otros": "other or cannot determine from description",
 }
 

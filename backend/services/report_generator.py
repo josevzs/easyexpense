@@ -5,6 +5,7 @@ from datetime import datetime
 from io import BytesIO
 
 from backend.models import ParsedData
+from backend.services.currency import convert_to_eur
 
 
 # ─────────────────────────────────────────────
@@ -129,6 +130,7 @@ def _filter_expenses(
     report_mode: str,
     personal_member: str | None,
     exclude_personal_expenses: bool,
+    exclude_categories: list[str] | None = None,
 ):
     """Return expense list with amounts adjusted for the report mode.
 
@@ -137,6 +139,10 @@ def _filter_expenses(
     total, so every figure in the report reflects what that person owes.
     """
     expenses = [e for e in data.expenses if not e.is_reimbursement]
+
+    if exclude_categories:
+        excluded = set(exclude_categories)
+        expenses = [e for e in expenses if e.category not in excluded]
 
     if report_mode == "personal" and personal_member:
         all_expense_ids = {e.entry_id for e in expenses}
@@ -197,8 +203,10 @@ def generate_markdown(
     report_mode: str = "global",
     personal_member: str | None = None,
     exclude_personal_expenses: bool = False,
+    exclude_categories: list[str] | None = None,
 ) -> str:
-    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses)
+    data = convert_to_eur(data)
+    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses, exclude_categories)
     dates = [e.date for e in expenses if e.date]
     date_from = min(dates).strftime("%d %b %Y") if dates else "?"
     date_to   = max(dates).strftime("%d %b %Y") if dates else "?"
@@ -325,8 +333,10 @@ def generate_pdf(
     report_mode: str = "global",
     personal_member: str | None = None,
     exclude_personal_expenses: bool = False,
+    exclude_categories: list[str] | None = None,
 ) -> bytes:
     _setup_pdf_fonts()
+    data = convert_to_eur(data)
 
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
@@ -366,7 +376,7 @@ def generate_pdf(
         fontName=_PDF_FONT, fontSize=10,
     )
 
-    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses)
+    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses, exclude_categories)
     dates = [e.date for e in expenses if e.date]
     date_from = min(dates).strftime("%d %b %Y") if dates else "?"
     date_to   = max(dates).strftime("%d %b %Y") if dates else "?"
@@ -597,10 +607,12 @@ def generate_xlsx(
     report_mode: str = "global",
     personal_member: str | None = None,
     exclude_personal_expenses: bool = False,
+    exclude_categories: list[str] | None = None,
 ) -> bytes:
     import pandas as pd
 
-    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses)
+    data = convert_to_eur(data)
+    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses, exclude_categories)
 
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
@@ -677,10 +689,12 @@ def generate_csv(
     report_mode: str = "global",
     personal_member: str | None = None,
     exclude_personal_expenses: bool = False,
+    exclude_categories: list[str] | None = None,
 ) -> bytes:
     import pandas as pd
 
-    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses)
+    data = convert_to_eur(data)
+    expenses = _filter_expenses(data, report_mode, personal_member, exclude_personal_expenses, exclude_categories)
 
     rows = [
         {

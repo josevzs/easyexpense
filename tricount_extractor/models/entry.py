@@ -31,6 +31,7 @@ class Entry:
     payer_name: str
     allocations: list[Allocation]
     category: str
+    category_custom: str | None = None
     urls: list[str] = field(default_factory=list)
 
     @classmethod
@@ -54,6 +55,7 @@ class Entry:
             payer_name=payer["alias"]["display_name"],
             allocations=[Allocation.from_json(a) for a in data["allocations"]],
             category=data.get("category", "UNCATEGORIZED"),
+            category_custom=data.get("category_custom") or None,
             urls=cls._extract_attachment_urls(data),
         )
 

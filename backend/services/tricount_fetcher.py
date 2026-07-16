@@ -44,7 +44,7 @@ _TRICOUNT_CATEGORY_MAP: dict[str, str] = {
     "PERSONAL":             "Gastos personales",
     "PERSONAL_CARE":        "Gastos personales",
     # Settlements / reimbursements
-    "SETTLEMENT":           "Tricount Close",
+    "SETTLEMENT":           "Transfer",
     # Generic fallback
     "OTHER":                "Otros",
     "UNCATEGORIZED":        "UNCATEGORIZED",
@@ -65,6 +65,25 @@ def _map_tricount_category(raw: str) -> str:
         return mapped
     # Unknown Tricount category: title-case it and pass through as custom
     return raw.replace("_", " ").title()
+
+
+def _resolve_category(entry) -> str:
+    """
+    Decide an entry's category, in priority order:
+    1. Balance/settlement entries (internal transfers between members, not real
+       spending) always go to "Transfer", regardless of whatever category the
+       Tricount API reports for them (usually UNCATEGORIZED).
+    2. A member-defined custom category in the native Tricount app
+       (`category_custom`, e.g. "Comidas & Cenas 🍜") is used as-is — these are
+       real user-chosen labels and take priority over the coarse system enum.
+    3. Otherwise, fall back to mapping Tricount's coarse `category` enum.
+    """
+    if entry.is_reimbursement:
+        return "Transfer"
+    custom = (entry.category_custom or "").strip()
+    if custom:
+        return custom
+    return _map_tricount_category(entry.category)
 
 
 def fetch_from_tricount(registry_id: str) -> ParsedData:
@@ -92,7 +111,7 @@ def _registry_to_parsed_data(registry) -> ParsedData:
         if date.tzinfo is None:
             date = date.replace(tzinfo=timezone.utc)
 
-        category = _map_tricount_category(entry.category)
+        category = _resolve_category(entry)
 
         # Collect unknown categories (not preset, not UNCATEGORIZED) as custom
         if category not in PRESET_CATEGORIES and category != "UNCATEGORIZED":

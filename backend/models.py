@@ -21,7 +21,7 @@ PRESET_CATEGORIES: list[str] = [
     "Farmacia",
     "Parking",
     "Taxis",
-    "Tricount Close",
+    "Transfer",
     "Otros",
 ]
 
@@ -113,6 +113,7 @@ class ReportRequest(BaseModel):
     report_mode: str = "global"  # "global" or "personal"
     personal_member: str | None = None
     exclude_personal_expenses: bool = False
+    exclude_categories: list[str] = []
 
 
 class ReportResponse(BaseModel):

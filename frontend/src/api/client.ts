@@ -128,6 +128,7 @@ export async function generateReport(
     report_mode?: 'global' | 'personal';
     personal_member?: string;
     exclude_personal_expenses?: boolean;
+    exclude_categories?: string[];
   },
 ): Promise<ReportResponse> {
   const { data } = await api.post<ReportResponse>('/report', {
@@ -137,6 +138,7 @@ export async function generateReport(
     report_mode: options?.report_mode ?? 'global',
     personal_member: options?.personal_member ?? null,
     exclude_personal_expenses: options?.exclude_personal_expenses ?? false,
+    exclude_categories: options?.exclude_categories ?? [],
   });
   return data;
 }

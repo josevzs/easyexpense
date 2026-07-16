@@ -8,7 +8,7 @@ const ALL_PRESETS = [
   'Estancias', 'Alquiler de coches', 'Comidas y cenas', 'Desayunos y cafés',
   'Entradas', 'Gasolina', 'Peajes', 'Trenes', 'Autobuses', 'Barcos y ferrys',
   'Aviones', 'Gastos personales', 'Supermercado', 'Farmacia', 'Parking',
-  'Taxis', 'Tricount Close', 'Otros',
+  'Taxis', 'Transfer', 'Otros',
 ];
 
 export default function AIControls() {

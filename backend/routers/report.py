@@ -1,7 +1,7 @@
 import base64
 import logging
 import re
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
 from typing import Optional
 
@@ -39,6 +39,7 @@ async def generate_report(request: Request, body: ReportRequest):
         report_mode=body.report_mode,
         personal_member=body.personal_member,
         exclude_personal_expenses=body.exclude_personal_expenses,
+        exclude_categories=body.exclude_categories,
     )
 
     result = ReportResponse()
@@ -84,6 +85,7 @@ async def download_report(
     session_id: str, format: str, trip_name: str = "Trip Report",
     report_mode: str = "global", personal_member: Optional[str] = None,
     exclude_personal_expenses: bool = False,
+    exclude_categories: list[str] = Query(default=[]),
 ):
     data = session_store.get_session(session_id)
     if data is None:
@@ -93,6 +95,7 @@ async def download_report(
         report_mode=report_mode,
         personal_member=personal_member,
         exclude_personal_expenses=exclude_personal_expenses,
+        exclude_categories=exclude_categories,
     )
 
     safe_name = _safe_filename(trip_name)

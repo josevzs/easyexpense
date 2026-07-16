@@ -86,7 +86,7 @@ export const useAppStore = create<AppState>()(
           'Estancias', 'Alquiler de coches', 'Comidas y cenas', 'Desayunos y cafés',
           'Entradas', 'Gasolina', 'Peajes', 'Trenes', 'Autobuses', 'Barcos y ferrys',
           'Aviones', 'Gastos personales', 'Supermercado', 'Farmacia', 'Parking',
-          'Taxis', 'Tricount Close', 'Otros',
+          'Taxis', 'Transfer', 'Otros',
         ];
         const custom = data.custom_categories ?? [];
         const all = [...presets, ...custom.filter((c) => !presets.includes(c))];

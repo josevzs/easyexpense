@@ -6,11 +6,12 @@ import { useAppStore } from '../../store/appStore';
 import './ReportView.css';
 
 export default function ReportView() {
-  const { sessionId, members } = useAppStore();
+  const { sessionId, members, allCategories } = useAppStore();
   const [tripName, setTripName] = useState('Trip Report');
   const [reportMode, setReportMode] = useState<'global' | 'personal'>('global');
   const [personalMember, setPersonalMember] = useState('');
   const [excludePersonal, setExcludePersonal] = useState(false);
+  const [excludeCategories, setExcludeCategories] = useState<string[]>([]);
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [xlsxBase64, setXlsxBase64] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function ReportView() {
         report_mode: reportMode,
         personal_member: reportMode === 'personal' ? personalMember : undefined,
         exclude_personal_expenses: reportMode === 'personal' ? excludePersonal : false,
+        exclude_categories: excludeCategories,
       });
       setMarkdown(result.markdown);
       setPdfBase64(result.pdf_base64);
@@ -81,6 +83,12 @@ export default function ReportView() {
     URL.revokeObjectURL(url);
   }
 
+  function toggleExcludeCategory(cat: string) {
+    setExcludeCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat],
+    );
+  }
+
   const canGenerate = sessionId && (reportMode === 'global' || (reportMode === 'personal' && personalMember));
 
   return (
@@ -115,6 +123,25 @@ export default function ReportView() {
             </button>
           </div>
         </div>
+
+        {/* Category exclusion — available in both modes */}
+        {allCategories.length > 0 && (
+          <div className="report-exclude-categories-row">
+            <span className="field-label">EXCLUDE CATEGORIES</span>
+            <div className="report-exclude-categories-list">
+              {allCategories.map(cat => (
+                <label key={cat} className="report-exclude-label">
+                  <input
+                    type="checkbox"
+                    checked={excludeCategories.includes(cat)}
+                    onChange={() => toggleExcludeCategory(cat)}
+                  />
+                  {cat}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Personal options */}
         {reportMode === 'personal' && (
