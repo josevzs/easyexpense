@@ -77,4 +77,5 @@ export interface ReportResponse {
   pdf_base64: string | null;
   xlsx_base64: string | null;
   csv_b64: string | null;
+  html: string | null;
 }

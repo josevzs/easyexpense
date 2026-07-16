@@ -121,6 +121,7 @@ class ReportResponse(BaseModel):
     pdf_base64: str | None = None
     xlsx_base64: str | None = None
     csv_b64: str | None = None
+    html: str | None = None
 
 
 class UploadSummary(BaseModel):

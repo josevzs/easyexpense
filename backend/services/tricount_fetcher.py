@@ -8,9 +8,12 @@ from backend.models import ParsedData, Expense, Allocation, Member, Balance, PRE
 _TRICOUNT_CATEGORY_MAP: dict[str, str] = {
     # Confirmed from live API
     "FOOD_AND_DRINK":       "Comidas y cenas",
-    # Accommodation
+    # Accommodation — bunq's API enum confusingly calls this bucket "TRAVEL"
+    # (verified against live data: every TRAVEL-category entry was lodging —
+    # "Alojamiento X", "Guesthouse Y", "Accommodation Fee Z", etc.)
     "ACCOMMODATION":        "Estancias",
     "HOTEL":                "Estancias",
+    "TRAVEL":               "Estancias",
     # Transport — specific
     "CAR_RENTAL":           "Alquiler de coches",
     "FUEL":                 "Gasolina",

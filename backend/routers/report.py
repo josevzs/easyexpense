@@ -7,6 +7,7 @@ from typing import Optional
 
 from backend.models import ReportRequest, ReportResponse
 from backend.services.report_generator import generate_markdown, generate_pdf, generate_xlsx, generate_csv
+from backend.services.html_report import generate_html_report
 from backend.storage import session_store
 from backend.limiter import limiter
 
@@ -75,6 +76,13 @@ async def generate_report(request: Request, body: ReportRequest):
             logger.exception("CSV generation failed")
             raise HTTPException(status_code=500, detail="CSV generation failed. Please try again.")
 
+    if "html" in body.formats:
+        try:
+            result.html = generate_html_report(data, safe_trip_name, **kwargs)
+        except Exception:
+            logger.exception("HTML chart generation failed")
+            raise HTTPException(status_code=500, detail="Chart generation failed. Please try again.")
+
     return result
 
 
@@ -127,5 +135,12 @@ async def download_report(
             media_type="text/csv; charset=utf-8",
             headers={"Content-Disposition": f'attachment; filename="{safe_name}.csv"'},
         )
+    elif format == "html":
+        html_content = generate_html_report(data, safe_name, **kwargs)
+        return Response(
+            content=html_content.encode("utf-8"),
+            media_type="text/html; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="{safe_name}.html"'},
+        )
     else:
-        raise HTTPException(status_code=400, detail="Format must be 'md', 'pdf', 'xlsx', or 'csv'")
+        raise HTTPException(status_code=400, detail="Format must be 'md', 'pdf', 'xlsx', 'csv', or 'html'")

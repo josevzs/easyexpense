@@ -12,20 +12,24 @@ export default function ReportView() {
   const [personalMember, setPersonalMember] = useState('');
   const [excludePersonal, setExcludePersonal] = useState(false);
   const [excludeCategories, setExcludeCategories] = useState<string[]>([]);
+  const [includeCharts, setIncludeCharts] = useState(true);
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [xlsxBase64, setXlsxBase64] = useState<string | null>(null);
   const [csvB64, setCsvB64] = useState<string | null>(null);
+  const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<'preview' | 'raw'>('preview');
+  const [view, setView] = useState<'preview' | 'raw' | 'charts'>('preview');
 
   async function handleGenerate() {
     if (!sessionId) return;
     setLoading(true);
     setError(null);
     try {
-      const result = await generateReport(sessionId, tripName, ['markdown', 'pdf', 'xlsx', 'csv'], {
+      const formats = ['markdown', 'pdf', 'xlsx', 'csv'];
+      if (includeCharts) formats.push('html');
+      const result = await generateReport(sessionId, tripName, formats, {
         report_mode: reportMode,
         personal_member: reportMode === 'personal' ? personalMember : undefined,
         exclude_personal_expenses: reportMode === 'personal' ? excludePersonal : false,
@@ -35,6 +39,8 @@ export default function ReportView() {
       setPdfBase64(result.pdf_base64);
       setXlsxBase64(result.xlsx_base64);
       setCsvB64(result.csv_b64);
+      setHtml(result.html);
+      setView(result.html ? 'charts' : 'preview');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Report generation failed');
     } finally {
@@ -83,6 +89,14 @@ export default function ReportView() {
     URL.revokeObjectURL(url);
   }
 
+  function downloadHtml() {
+    if (!html) return;
+    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = `${tripName}-charts.html`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function toggleExcludeCategory(cat: string) {
     setExcludeCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat],
@@ -123,6 +137,16 @@ export default function ReportView() {
             </button>
           </div>
         </div>
+
+        {/* Interactive charts toggle */}
+        <label className="report-exclude-label">
+          <input
+            type="checkbox"
+            checked={includeCharts}
+            onChange={e => setIncludeCharts(e.target.checked)}
+          />
+          Include interactive charts
+        </label>
 
         {/* Category exclusion — available in both modes */}
         {allCategories.length > 0 && (
@@ -178,11 +202,15 @@ export default function ReportView() {
             <button className="btn btn-sm btn-fill" onClick={downloadPdf}>↓ .pdf</button>
             <button className="btn btn-sm" onClick={downloadXlsx}>↓ .xlsx</button>
             <button className="btn btn-sm" onClick={downloadCsv}>↓ .csv</button>
+            {html && <button className="btn btn-sm" onClick={downloadHtml}>↓ .html</button>}
           </div>
         )}
 
         {markdown && (
           <div className="report-view-toggle">
+            {html && (
+              <button className={`btn btn-sm ${view === 'charts' ? 'btn-fill' : ''}`} onClick={() => setView('charts')}>Charts</button>
+            )}
             <button className={`btn btn-sm ${view === 'preview' ? 'btn-fill' : ''}`} onClick={() => setView('preview')}>Preview</button>
             <button className={`btn btn-sm ${view === 'raw' ? 'btn-fill' : ''}`} onClick={() => setView('raw')}>Raw</button>
           </div>
@@ -193,7 +221,14 @@ export default function ReportView() {
 
       {markdown && (
         <div className="report-content">
-          {view === 'preview' ? (
+          {view === 'charts' && html ? (
+            <iframe
+              className="report-charts-frame"
+              srcDoc={html}
+              sandbox="allow-scripts"
+              title="Interactive charts"
+            />
+          ) : view === 'preview' ? (
             <div className="md-preview">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
             </div>
